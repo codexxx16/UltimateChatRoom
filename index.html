@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ChatRoom Pro - AI Enhanced</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif}
+    body{background:#0d1117;color:#c9d1d9}
+    header{background:#161b22;padding:15px;text-align:center;font-size:24px;font-weight:bold;border-bottom:1px solid #30363d}
+    .container{display:flex;height:calc(100vh - 60px)}
+    nav{width:250px;background:#161b22;border-right:1px solid #30363d;overflow-y:auto}
+    nav h2{padding:15px;font-size:18px;border-bottom:1px solid #30363d}
+    nav ul{list-style:none}
+    nav ul li{padding:10px 15px;cursor:pointer;transition:0.2s}
+    nav ul li:hover{background:#21262d}
+    main{flex:1;display:flex;flex-direction:column}
+    .tab-content{flex:1;display:none;flex-direction:column;overflow-y:auto}
+    .tab-content.active{display:flex}
+    .chat-window{flex:1;padding:20px;overflow-y:auto}
+    .chat-message{margin-bottom:10px;padding:10px;border-radius:8px;max-width:70%}
+    .chat-message.user{background:#238636;align-self:flex-end}
+    .chat-message.other{background:#30363d;align-self:flex-start}
+    .chat-input{display:flex;padding:15px;border-top:1px solid #30363d;background:#161b22}
+    .chat-input input{flex:1;padding:10px;border:none;border-radius:5px;margin-right:10px;background:#0d1117;color:#c9d1d9}
+    .chat-input button{padding:10px 15px;border:none;border-radius:5px;background:#238636;color:white;cursor:pointer}
+    footer{background:#161b22;padding:10px;text-align:center;font-size:14px;border-top:1px solid #30363d}
+    .hidden{display:none}
+    .login-container{height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0d1117}
+    .login-box{background:#161b22;padding:30px;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.5);width:300px}
+    .login-box h2{text-align:center;margin-bottom:20px}
+    .login-box input{width:100%;padding:10px;margin:10px 0;border:none;border-radius:5px;background:#0d1117;color:#c9d1d9}
+    .login-box button{width:100%;padding:10px;border:none;border-radius:5px;background:#238636;color:white;cursor:pointer}
+    .tabs{display:flex;border-bottom:1px solid #30363d;background:#161b22}
+    .tab{padding:15px 20px;cursor:pointer}
+    .tab.active{background:#21262d;font-weight:bold}
+    .presence{padding:15px}
+    .presence ul{list-style:none}
+    .presence ul li{padding:5px 0;border-bottom:1px solid #30363d}
+    .activity-feed{padding:15px;overflow-y:auto}
+    .activity-feed .activity{margin-bottom:10px;padding:10px;background:#21262d;border-radius:5px}
+    .ai-assistant{flex:1;display:flex;flex-direction:column;padding:20px}
+    .ai-output{flex:1;overflow-y:auto;margin-bottom:10px;background:#21262d;padding:15px;border-radius:10px}
+    .ai-input{display:flex}
+    .ai-input input{flex:1;padding:10px;border:none;border-radius:5px 0 0 5px;background:#0d1117;color:#c9d1d9}
+    .ai-input button{padding:10px;border:none;background:#238636;color:white;border-radius:0 5px 5px 0;cursor:pointer}
+    .toast{position:fixed;bottom:20px;right:20px;background:#238636;color:white;padding:10px 20px;border-radius:5px;display:none}
+  </style>
+</head>
+<body>
+  <div class="login-container" id="loginContainer">
+    <div class="login-box">
+      <h2>Login</h2>
+      <input type="email" id="email" placeholder="Email">
+      <input type="password" id="password" placeholder="Password">
+      <button id="loginBtn">Login</button>
+      <button id="signupBtn">Sign Up</button>
+      <p id="loginMsg"></p>
+    </div>
+  </div>
+
+  <div class="app hidden" id="appContainer">
+    <header>ChatRoom Pro - AI Enhanced</header>
+    <div class="container">
+      <nav>
+        <h2>Navigation</h2>
+        <ul>
+          <li class="nav-link" data-tab="chat">💬 Chat</li>
+          <li class="nav-link" data-tab="rooms">📂 Rooms</li>
+          <li class="nav-link" data-tab="presence">🟢 Presence</li>
+          <li class="nav-link" data-tab="activity">📜 Activity</li>
+          <li class="nav-link" data-tab="ai">🤖 AI Assistant</li>
+        </ul>
+      </nav>
+      <main>
+        <div class="tabs">
+          <div class="tab active" data-tab="chat">Chat</div>
+          <div class="tab" data-tab="rooms">Rooms</div>
+          <div class="tab" data-tab="presence">Presence</div>
+          <div class="tab" data-tab="activity">Activity</div>
+          <div class="tab" data-tab="ai">AI</div>
+        </div>
+        <div class="tab-content active" id="chat">
+          <div class="chat-window" id="chatWindow"></div>
+          <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="Type a message...">
+            <button id="sendBtn">Send</button>
+          </div>
+        </div>
+        <div class="tab-content" id="rooms">
+          <div class="chat-window">
+            <p>Room management will be here.</p>
+          </div>
+        </div>
+        <div class="tab-content" id="presence">
+          <div class="presence">
+            <h3>Online Users</h3>
+            <ul id="presenceList"></ul>
+          </div>
+        </div>
+        <div class="tab-content" id="activity">
+          <div class="activity-feed" id="activityFeed"></div>
+        </div>
+        <div class="tab-content" id="ai">
+          <div class="ai-assistant">
+            <div class="ai-output" id="aiOutput">Hello! I am your AI assistant.</div>
+            <div class="ai-input">
+              <input type="text" id="aiInput" placeholder="Ask me something...">
+              <button id="aiSendBtn">Send</button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    <footer>© 2025 ChatRoom Pro</footer>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+    import { getDatabase, ref, set, onChildAdded, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDXlJMf21zKgyBK1_0w38A2ne__cAbyxPU",
+      authDomain: "chatroomai-333ed.firebaseapp.com",
+      projectId: "chatroomai-333ed",
+      storageBucket: "chatroomai-333ed.appspot.com", // ✅ FIXED
+      messagingSenderId: "409648887637",
+      appId: "1:409648887637:web:8f2af3540d65c79264e1dc",
+      measurementId: "G-BV4JE727E3",
+      databaseURL: "https://chatroomai-333ed-default-rtdb.firebaseio.com"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const db = getDatabase();
+
+    const loginContainer = document.getElementById('loginContainer');
+    const appContainer = document.getElementById('appContainer');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const loginBtn = document.getElementById('loginBtn');
+    const signupBtn = document.getElementById('signupBtn');
+    const loginMsg = document.getElementById('loginMsg');
+
+    // ✅ Show exact errors in UI and console
+    loginBtn.onclick = async () => {
+      try {
+        await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+      } catch(err) {
+        console.error("Login error:", err);
+        loginMsg.textContent = err.code + " - " + err.message;
+      }
+    };
+
+    signupBtn.onclick = async () => {
+      try {
+        await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+      } catch(err) {
+        console.error("Signup error:", err);
+        loginMsg.textContent = err.code + " - " + err.message;
+      }
+    };
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        loginContainer.classList.add('hidden');
+        appContainer.classList.remove('hidden');
+        initApp(user);
+      } else {
+        loginContainer.classList.remove('hidden');
+        appContainer.classList.add('hidden');
+      }
+    });
+
+    function initApp(user) {
+      const chatWindow = document.getElementById('chatWindow');
+      const chatInput = document.getElementById('chatInput');
+      const sendBtn = document.getElementById('sendBtn');
+      const presenceList = document.getElementById('presenceList');
+      const activityFeed = document.getElementById('activityFeed');
+      const aiOutput = document.getElementById('aiOutput');
+      const aiInput = document.getElementById('aiInput');
+      const aiSendBtn = document.getElementById('aiSendBtn');
+      const toast = document.getElementById('toast');
+
+      // Tabs
+      const tabs = document.querySelectorAll('.tab');
+      const tabContents = document.querySelectorAll('.tab-content');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => t.classList.remove('active'));
+          tabContents.forEach(c => c.classList.remove('active'));
+          tab.classList.add('active');
+          document.getElementById(tab.dataset.tab).classList.add('active');
+        });
+      });
+
+      // Chat
+      sendBtn.onclick = () => {
+        if(chatInput.value.trim() !== ""){
+          const msg = {user: user.email, text: chatInput.value, time: Date.now()};
+          set(ref(db, 'messages/' + Date.now()), msg);
+          chatInput.value = "";
+        }
+      };
+
+      onChildAdded(ref(db, 'messages'), (data) => {
+        const msg = data.val();
+        const div = document.createElement('div');
+        div.className = 'chat-message ' + (msg.user === user.email ? 'user' : 'other');
+        div.textContent = msg.user + ": " + msg.text;
+        chatWindow.appendChild(div);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+      });
+
+      // Presence
+      set(ref(db, 'presence/' + user.uid), {email: user.email, online:true});
+      onValue(ref(db, 'presence'), (snapshot) => {
+        presenceList.innerHTML = '';
+        snapshot.forEach(child => {
+          const li = document.createElement('li');
+          li.textContent = child.val().email + " (online)";
+          presenceList.appendChild(li);
+        });
+      });
+
+      // Activity
+      onChildAdded(ref(db, 'messages'), (data) => {
+        const msg = data.val();
+        const div = document.createElement('div');
+        div.className = 'activity';
+        div.textContent = msg.user + " sent a message.";
+        activityFeed.appendChild(div);
+      });
+
+      // AI Assistant (mock)
+      aiSendBtn.onclick = () => {
+        aiOutput.textContent += "\nYou: " + aiInput.value;
+        aiOutput.textContent += "\nAI: I'm still learning!";
+        aiInput.value = "";
+      };
+
+      // Toast
+      function showToast(message) {
+        toast.textContent = message;
+        toast.style.display = 'block';
+        setTimeout(()=>{toast.style.display='none'},3000);
+      }
+    }
+  </script>
+</body>
+            </html>
